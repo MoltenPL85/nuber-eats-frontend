@@ -1,15 +1,16 @@
 import { gql, useMutation } from '@apollo/client';
 import React from 'react';
+import Helmet from 'react-helmet';
 import { useForm } from 'react-hook-form';
 import { FormError } from '../components/form-error';
 import {
   loginMutation,
   loginMutationVariables,
 } from '../__generated__/loginMutation';
-
-import nuberLogo from '../images/eats-logo.svg';
 import { Button } from '../components/button';
 import { Link } from 'react-router-dom';
+import nuberLogo from '../images/eats-logo.svg';
+import { isLoggedInVar } from '../apollo';
 
 const LOGIN_MUTATION = gql`
   mutation loginMutation($loginInput: LoginInput!) {
@@ -42,6 +43,7 @@ export const Login = () => {
     } = data;
     if (ok) {
       console.log(token);
+      isLoggedInVar(true);
     }
   };
   const [loginMutation, { data: loginMutationResult, loading }] = useMutation<
@@ -66,6 +68,9 @@ export const Login = () => {
 
   return (
     <div className="h-screen flex items-center flex-col mt-10 lg:mt-28">
+      <Helmet>
+        <title>Login | Nuber Eats</title>
+      </Helmet>
       <div className="w-full max-w-screen-sm flex flex-col px-5 items-center">
         <img src={nuberLogo} alt="Nuber Logo" className="w-52 mb-10" />
         <h4 className="w-full font-medium text-left text-3xl mb-5">
@@ -76,7 +81,10 @@ export const Login = () => {
           className="grid gap-3 mt-5 w-full mb-3"
         >
           <input
-            ref={register({ required: 'Email is required' })}
+            ref={register({
+              required: 'Email is required',
+              pattern: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+            })}
             name="email"
             required
             type="email"
@@ -85,6 +93,9 @@ export const Login = () => {
           />
           {errors.email?.message && (
             <FormError errorMessage={errors.email?.message} />
+          )}
+          {errors.email?.type === 'pattern' && (
+            <FormError errorMessage={'Please enter a valid email'} />
           )}
           <input
             ref={register({ required: 'Password is required' })}
