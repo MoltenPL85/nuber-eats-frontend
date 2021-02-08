@@ -1,5 +1,5 @@
-import { gql, useMutation } from '@apollo/client';
 import React from 'react';
+import { gql, useMutation } from '@apollo/client';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 import { FormError } from '../components/form-error';
@@ -47,7 +47,7 @@ export const CreateAccount = () => {
     } = data;
     if (ok) {
       alert('Account Created! Log in now!');
-      history.push('/login');
+      history.push('/');
     }
   };
   const [
@@ -137,7 +137,7 @@ export const CreateAccount = () => {
         </form>
         <div>
           Already have an account?{' '}
-          <Link to="/login" className="text-lime-600 hover:underline">
+          <Link to="/" className="text-lime-600 hover:underline">
             Log in now
           </Link>
         </div>
