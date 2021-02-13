@@ -1,10 +1,14 @@
-import { gql, useQuery } from '@apollo/client';
 import React, { useState } from 'react';
+import { gql, useQuery } from '@apollo/client';
+import { Helmet } from 'react-helmet-async';
+import { useForm } from 'react-hook-form';
 import { Restaurant } from '../../components/restaurant';
 import {
   restaurantsPageQuery,
   restaurantsPageQueryVariables,
 } from '../../__generated__/restaurantsPageQuery';
+import { Link, useHistory } from 'react-router-dom';
+import { CATEGORY_FRAGMENT, RESTAURANT_FRAGMENT } from '../../fragments';
 
 const RESTAURANTS_QUERY = gql`
   query restaurantsPageQuery($input: RestaurantsInput!) {
@@ -12,11 +16,7 @@ const RESTAURANTS_QUERY = gql`
       ok
       error
       categories {
-        id
-        name
-        coverImg
-        slug
-        restaurantCount
+        ...CategoryParts
       }
     }
     restaurants(input: $input) {
@@ -25,18 +25,17 @@ const RESTAURANTS_QUERY = gql`
       totalPages
       totalResults
       results {
-        id
-        name
-        coverImg
-        category {
-          name
-        }
-        address
-        isPromoted
+        ...RestaurantParts
       }
     }
   }
+  ${RESTAURANT_FRAGMENT}
+  ${CATEGORY_FRAGMENT}
 `;
+
+interface IFormProps {
+  searchTerm: string;
+}
 
 export const Restaurants = () => {
   const [page, setPage] = useState(1);
@@ -50,14 +49,32 @@ export const Restaurants = () => {
       },
     },
   });
+  const { register, handleSubmit, getValues } = useForm<IFormProps>();
+  const history = useHistory();
+
+  const onSearchSubmit = () => {
+    const { searchTerm } = getValues();
+    history.push({
+      pathname: '/search',
+      search: `?term=${searchTerm}`,
+    });
+  };
   const onNextPageClick = () => setPage((current) => current + 1);
   const onPrevPageClick = () => setPage((current) => current - 1);
 
   return (
-    <div>
-      <form className="w-full py-40 flex items-center justify-center">
+    <div className="border-gray-500">
+      <Helmet>
+        <title>Home | Nuber Eats</title>
+      </Helmet>
+      <form
+        onSubmit={handleSubmit(onSearchSubmit)}
+        className="bg-gray-800 w-full py-40 flex items-center justify-center"
+      >
         <input
-          className="input rounded-md border-0 w-3/12"
+          name="searchTerm"
+          ref={register({ required: true, min: 3 })}
+          className="input rounded-md border-0 w-3/4 md:w-3/12"
           type="search"
           placeholder="Search Restaurants..."
         />
@@ -66,20 +83,23 @@ export const Restaurants = () => {
         <div className="max-w-screen-2xl pb-20 mx-auto mt-8">
           <div className="flex justify-around max-w-lg mx-auto">
             {data?.allCategories.categories?.map((category) => (
-              <div className="flex flex-col items-center cursor-pointer transform transition-all hover:scale-110">
-                <div
-                  className="w-20 h-20 bg-cover rounded-full shadow-2xl"
-                  style={{ backgroundImage: `url(${category.coverImg})` }}
-                ></div>
-                <span className="mt-1 text-sm text-center font-medium">
-                  {category.name}
-                </span>
-              </div>
+              <Link key={category.id} to={`/category/${category.slug}`}>
+                <div className="flex flex-col items-center cursor-pointer transform transition-all hover:scale-110">
+                  <div
+                    className="w-20 h-20 bg-cover rounded-full shadow-2xl"
+                    style={{ backgroundImage: `url(${category.coverImg})` }}
+                  ></div>
+                  <span className="mt-1 text-sm text-center font-medium">
+                    {category.name}
+                  </span>
+                </div>
+              </Link>
             ))}
           </div>
-          <div className="grid mt-16 grid-cols-3 gap-x-5 gap-y-10">
+          <div className="grid mt-16 md:grid-cols-3 gap-x-5 gap-y-10">
             {data?.restaurants.results?.map((restaurant) => (
               <Restaurant
+                key={restaurant.id}
                 id={restaurant.id + ''}
                 coverImg={restaurant.coverImg}
                 name={restaurant.name}
