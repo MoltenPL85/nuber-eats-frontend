@@ -13,7 +13,7 @@ import nuberLogo from '../images/eats-logo.svg';
 import { authTokenVar, isLoggedInVar } from '../apollo';
 import { LOCALSTORAGE_TOKEN } from '../constants';
 
-const LOGIN_MUTATION = gql`
+export const LOGIN_MUTATION = gql`
   mutation loginMutation($loginInput: LoginInput!) {
     login(input: $loginInput) {
       ok
@@ -109,9 +109,6 @@ export const Login = () => {
           />
           {errors.password?.message && (
             <FormError errorMessage={errors.password?.message} />
-          )}
-          {errors.password?.type === 'minLength' && (
-            <FormError errorMessage="Password must be more than 10 chars." />
           )}
           <Button
             canClick={formState.isValid}
