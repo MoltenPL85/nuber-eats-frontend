@@ -19,13 +19,7 @@ describe('Log In', () => {
   });
 
   it('can fill out the form and log in', () => {
-    user.visit('/');
-    user.findByPlaceholderText(/email/i).type('maxClient@max.com');
-    user.findByPlaceholderText(/password/i).type('12345');
-    user
-      .findByRole('button')
-      .should('not.have.class', 'pointer-events-none')
-      .click();
-    user.window().its('localStorage.nuber-token').should('be.a', 'string');
+    // @ts-ignore
+    user.login('maxClient@max.com', '12345');
   });
 });
